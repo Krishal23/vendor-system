@@ -5,13 +5,31 @@
   --foreground: #171717;
 }
 
+@layer utilities {
+  .glass {
+    @apply bg-white/20 backdrop-blur-lg border border-white/10 rounded-lg;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .glass {
+      @apply bg-gray-900/30 border-gray-700;
+    }
+  }
+
+  .text-foreground {
+    color: var(--foreground);
+  }
+
+}
+
+
 
 
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
@@ -21,11 +39,11 @@
   .btn-primary {
     @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200;
   }
-  
+
   .btn-secondary {
     @apply bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md transition duration-200;
   }
-  
+
   .btn-danger {
     @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200;
   }

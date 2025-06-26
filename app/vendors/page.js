@@ -8,7 +8,10 @@ export default function Page() {
   return (
     <>
       <Navbar/>
-      <VendorsPage/>
+      <div className="container mx-auto mt-8 px-4 py-16 text-white"> 
+        <VendorsPage/>
+
+      </div>
     </>
   )
 }

@@ -1,206 +1,223 @@
-'use client'
-import { useEffect, useState } from 'react'
-import axios from 'axios'
+'use client';
+
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  MenuItem,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  Tooltip
+} from '@mui/material';
+import { Delete, Edit, Close, Visibility, Add } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
+import AddVendorForm from './AddVendorForm'
 
 export default function VendorsPage() {
-  const [vendors, setVendors] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(5)
-  const [sortBy, setSortBy] = useState('vendorName')
-  const [order, setOrder] = useState('asc')
-  const [search, setSearch] = useState('')
-  const [bankName, setBankName] = useState('')
-  const [selectedVendor, setSelectedVendor] = useState(null)
-  const [formData, setFormData] = useState({
-    vendorName: '',
-    bankAccountNo: '',
-    bankName: '',
-    addressLine1: '',
-    addressLine2: '',
-    city: '',
-    country: '',
-    zipCode: '',
-  })
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const [sortBy, setSortBy] = useState('vendorName');
+  const [order, setOrder] = useState('asc');
+  const [search, setSearch] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [selectedVendor, setSelectedVendor] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({});
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+
 
   const fetchVendors = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const res = await axios.get(`/api/vendors`, {
-        params: {
-          page,
-          limit,
-          sortBy,
-          order,
-          bankName,
-          vendorName: search,
-        },
-      })
-      setVendors(res.data.vendors || [])
+        params: { page, limit, sortBy, order, bankName, vendorName: search }
+      });
+      setVendors(res.data.vendors || []);
     } catch (err) {
-      console.error('Fetch error:', err)
+      toast.error('Failed to fetch vendors');
     }
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
-  useEffect(() => {
-    fetchVendors()
-  }, [page, limit, sortBy, order, search, bankName])
+  useEffect(() => { fetchVendors(); }, [page, limit, sortBy, order, search, bankName]);
 
   const handleRowClick = async (vendorId) => {
     try {
-      const res = await axios.get(`/api/vendors/${vendorId}`)
-      console.log(res.data)
-      setSelectedVendor(res.data)
-      setFormData({
-        vendorName: res.data.vendorName || '',
-        bankAccountNo: res.data.bankAccountNo || '',
-        bankName: res.data.bankName || '',
-        addressLine1: res.data.addressLine1 || '',
-        addressLine2: res.data.addressLine2 || '',
-        city: res.data.city || '',
-        country: res.data.country || '',
-        zipCode: res.data.zipCode || '',
-      })
+      const res = await axios.get(`/api/vendors/${vendorId}`);
+      setSelectedVendor(res.data);
+      setFormData(res.data);
+      setEditMode(false);
     } catch (err) {
-      console.error('Error fetching vendor:', err)
+      toast.error('Failed to load vendor details');
     }
-  }
+  };
 
-  const handleFormChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+  const handleFormChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`/api/vendors/${selectedVendor._id}`, formData)
-      setSelectedVendor(null)
-      fetchVendors()
+      await axios.put(`/api/vendors/${selectedVendor._id}`, formData);
+      toast.success('Vendor updated successfully');
+      setSelectedVendor(null);
+      fetchVendors();
     } catch (err) {
-      console.error('Update failed:', err)
-      alert('Failed to update vendor')
+      toast.error('Failed to update vendor');
     }
-  }
+  };
 
   const handleDelete = async () => {
-    const confirmDelete = confirm('Are you sure you want to delete this vendor?')
-    if (!confirmDelete) return
+    if (!confirm('Are you sure you want to delete this vendor?')) return;
     try {
-      await axios.delete(`/api/vendors/${selectedVendor._id}`)
-      setSelectedVendor(null)
-      fetchVendors()
+      await axios.delete(`/api/vendors/${selectedVendor._id}`);
+      toast.success('Vendor deleted');
+      setSelectedVendor(null);
+      fetchVendors();
     } catch (err) {
-      console.error('Delete failed:', err)
-      alert('Failed to delete vendor')
+      toast.error('Failed to delete vendor');
     }
-  }
+  };
+
+  const editableFields = ['vendorName', 'bankAccountNo', 'bankName', 'addressLine1', 'addressLine2', 'city', 'country', 'zipCode'];
 
   return (
-    <div className="p-6">
-      
-      <h1 className="text-2xl font-bold mb-4">Vendor List</h1>
+    <Box p={4} sx={{ minHeight: '100vh', background: 'linear-gradient(to right, rgba(30,30,30,0.8), rgba(50,50,50,0.9))', backdropFilter: 'blur(10px)', color: 'white', fontFamily: 'Inter, sans-serif' }}>
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h4" fontWeight={700} gutterBottom sx={{ color: '#90caf9' }}>Vendors List</Typography>
+          <Button startIcon={<Add />} onClick={() => setAddDialogOpen(true)} variant="outlined" sx={{ color: '#90caf9', borderColor: '#90caf9' }}>Add Vendor</Button>
+        </Box>
+      </motion.div>
 
-      {/* Search Bar */}
-      <input
-        type="text"
-        placeholder="Search vendor..."
-        className="border px-4 py-2 mb-2 rounded w-full max-w-md"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Search Bank Name..."
-        className="border px-4 py-2 mb-4 rounded w-full max-w-md"
-        value={bankName}
-        onChange={(e) => setBankName(e.target.value)}
-      />
+      <Box display="flex" gap={2} mb={4} flexWrap="wrap" justifyContent="center">
+        <TextField label="Search Vendor" value={search} onChange={(e) => setSearch(e.target.value)} fullWidth variant="outlined" sx={{ maxWidth: 250, input: { color: '#fff' }, '& .MuiInputLabel-root': { color: '#90caf9' }, '& fieldset': { borderColor: '#90caf9' } }} />
+        <TextField label="Search Bank" value={bankName} onChange={(e) => setBankName(e.target.value)} fullWidth variant="outlined" sx={{ maxWidth: 250, input: { color: '#fff' }, '& .MuiInputLabel-root': { color: '#90caf9' }, '& fieldset': { borderColor: '#90caf9' } }} />
+        <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)} variant="outlined" sx={{ color: '#fff', minWidth: 150, '& fieldset': { borderColor: '#90caf9' } }}>
+          <MenuItem value="vendorName">Vendor Name</MenuItem>
+          <MenuItem value="bankName">Bank Name</MenuItem>
+          <MenuItem value="createdAt">Created At</MenuItem>
+        </Select>
+        <Select value={order} onChange={(e) => setOrder(e.target.value)} variant="outlined" sx={{ color: '#fff', minWidth: 100, '& fieldset': { borderColor: '#90caf9' } }}>
+          <MenuItem value="asc">ASC</MenuItem>
+          <MenuItem value="desc">DESC</MenuItem>
+        </Select>
+      </Box>
 
-      {/* Sorting */}
-      <div className="flex items-center gap-4 mb-4">
-        <label className="font-medium">Sort by:</label>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="border rounded px-2 py-1">
-          <option value="vendorName">Vendor Name</option>
-          <option value="bankName">Bank Name</option>
-          <option value="createdAt">Created At</option>
-        </select>
-
-        <select value={order} onChange={(e) => setOrder(e.target.value)} className="border rounded px-2 py-1">
-          <option value="asc">ASC</option>
-          <option value="desc">DESC</option>
-        </select>
-      </div>
-
-      {/* Vendor Table */}
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <table className="w-full border text-left">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-4 py-2">Vendor Name</th>
-              <th className="px-4 py-2">Bank Name</th>
-              <th className="px-4 py-2">Account No</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vendors.map((v) => (
-              <tr key={v._id} className="border-t cursor-pointer hover:bg-gray-50" onClick={() => handleRowClick(v._id)}>
-                <td className="px-4 py-2">{v.vendorName}</td>
-                <td className="px-4 py-2">{v.bankName}</td>
-                <td className="px-4 py-2">{v.bankAccountNo}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {loading ? <CircularProgress sx={{ color: '#90caf9' }} /> : (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+          <Table sx={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 3, overflow: 'hidden' }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: '#90caf9' }}>Vendor Name</TableCell>
+                <TableCell sx={{ color: '#90caf9' }}>Bank Name</TableCell>
+                <TableCell sx={{ color: '#90caf9' }}>Account No</TableCell>
+                <TableCell sx={{ color: '#90caf9' }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {vendors.map((v) => (
+                <TableRow key={v._id} hover sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' } }}>
+                  <TableCell sx={{ color: '#eee' }}>{v.vendorName}</TableCell>
+                  <TableCell sx={{ color: '#eee' }}>{v.bankName}</TableCell>
+                  <TableCell sx={{ color: '#eee' }}>{v.bankAccountNo}</TableCell>
+                  <TableCell>
+                    <Tooltip title="View Details">
+                      <IconButton onClick={() => handleRowClick(v._id)}>
+                        <Visibility sx={{ color: '#90caf9' }} />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </motion.div>
       )}
 
-      {/* Pagination Controls */}
-      <div className="mt-6 flex gap-4 items-center">
-        <button onClick={() => setPage((p) => Math.max(p - 1, 1))} className="px-3 py-1 bg-gray-200 rounded">
-          Prev
-        </button>
-        <span>Page {page}</span>
-        <button onClick={() => setPage((p) => p + 1)} className="px-3 py-1 bg-gray-200 rounded">
-          Next
-        </button>
-        <select value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="ml-4 px-2 py-1 border rounded">
-          {[5, 10, 15].map((l) => (
-            <option key={l} value={l}>
-              Show {l}
-            </option>
+      <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle sx={{ bgcolor: '#1e1e1e', color: '#90caf9' }}>Add New Vendor</DialogTitle>
+        <DialogContent sx={{ bgcolor: '#121212' }}>
+          <AddVendorForm onClose={() => setAddDialogOpen(false)} onSuccess={fetchVendors} />
+        </DialogContent>
+      </Dialog>
+
+      <Box mt={4} display="flex" justifyContent="center" alignItems="center" gap={2}>
+        <Button onClick={() => setPage((p) => Math.max(p - 1, 1))} sx={{ color: '#fff', borderColor: '#90caf9' }} variant="outlined">Prev</Button>
+        <Typography sx={{ color: '#90caf9' }}>Page {page}</Typography>
+        <Button onClick={() => setPage((p) => p + 1)} sx={{ color: '#fff', borderColor: '#90caf9' }} variant="outlined">Next</Button>
+        <Select value={limit} onChange={(e) => setLimit(Number(e.target.value))} variant="outlined" sx={{ color: '#fff', '& fieldset': { borderColor: '#90caf9' } }}>
+          {[5, 10, 15].map((l) => <MenuItem key={l} value={l}>Show {l}</MenuItem>)}
+        </Select>
+      </Box>
+
+      <Dialog open={!!selectedVendor} onClose={() => setSelectedVendor(null)} fullWidth maxWidth="sm">
+        <DialogTitle sx={{ bgcolor: '#1e1e1e', color: '#90caf9' }}>
+          Vendor Details
+          <IconButton onClick={() => setSelectedVendor(null)} sx={{ position: 'absolute', right: 8, top: 8, color: '#90caf9' }}>
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ bgcolor: '#121212' }}>
+          <Typography mb={2} variant="body2" sx={{ color: '#aaa' }}>Vendor ID: {selectedVendor?._id}</Typography>
+          {editableFields.map((field) => (
+            <TextField
+              key={field}
+              fullWidth
+              label={field}
+              name={field}
+              value={formData[field] || ''}
+              onChange={handleFormChange}
+              margin="dense"
+              disabled={!editMode}
+              sx={{
+                '& .MuiInputBase-input': {
+                  color: '#ccc'
+                },
+                '& .MuiInputBase-input.Mui-disabled': {
+                  WebkitTextFillColor: '#ccc !important',
+                  opacity: 1,
+                },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: editMode ? '#90caf9' : '#555'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: '#90caf9'
+                }
+              }}
+            />
           ))}
-        </select>
-      </div>
-
-      {/* Vendor Details Modal */}
-      {selectedVendor && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-xl">
-            <h2 className="text-xl font-bold mb-4">Vendor Details</h2>
-            <p className="mb-4 text-gray-700 text-sm"><strong>ID:</strong> {selectedVendor._id}</p>
-
-            {/* Form Fields */}
-            {['vendorName', 'bankAccountNo', 'bankName', 'addressLine1', 'addressLine2', 'city', 'country', 'zipCode'].map((field) => (
-              <input
-                key={field}
-                type="text"
-                name={field}
-                placeholder={field}
-                value={formData[field]}
-                onChange={handleFormChange}
-                className="border mb-2 p-2 w-full"
-              />
-            ))}
-
-            <div className="flex justify-end mt-4 gap-2">
-              <button onClick={handleUpdate} className="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
-              <button onClick={handleDelete} className="bg-red-500 text-white px-4 py-2 rounded">Delete</button>
-              <button onClick={() => setSelectedVendor(null)} className="bg-gray-300 px-4 py-2 rounded">Close</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
+        </DialogContent>
+        <DialogActions sx={{ bgcolor: '#121212' }}>
+          {!editMode ? (
+            <>
+              <Button onClick={() => setEditMode(true)} startIcon={<Edit />} variant="contained" color="primary">Edit</Button>
+              <Button onClick={handleDelete} color="error" startIcon={<Delete />}>Delete</Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={() => setEditMode(false)} variant="outlined" sx={{ color: '#90caf9', borderColor: '#90caf9' }}>Cancel</Button>
+              <Button onClick={handleUpdate} variant="contained" startIcon={<Edit />} color="primary">Save</Button>
+            </>
+          )}
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
 }
