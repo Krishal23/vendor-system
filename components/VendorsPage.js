@@ -47,7 +47,7 @@ export default function VendorsPage() {
     fetchVendors()
   }, [page, limit, sortBy, order, search, bankName])
 
-  const handleRowClick = async (vendorId:any) => {
+  const handleRowClick = async (vendorId) => {
     try {
       const res = await axios.get(`/api/vendors/${vendorId}`)
       console.log(res.data)
@@ -97,6 +97,7 @@ export default function VendorsPage() {
 
   return (
     <div className="p-6">
+      
       <h1 className="text-2xl font-bold mb-4">Vendor List</h1>
 
       {/* Search Bar */}
