@@ -87,6 +87,7 @@ export async function GET(request) {
 
     //query params
     const {searchParams}=new URL(request.url);
+    console.log(searchParams)
     const page=parseInt(searchParams.get("page")|| "1");
     const limit=parseInt(searchParams.get("limit")|| "10");
     const sortBy=searchParams.get("sortBy")|| "createdAt";
