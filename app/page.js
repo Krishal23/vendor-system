@@ -28,7 +28,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[url('/bg-light.jpg')] dark:bg-[url('/bg-dark.jpg')] bg-cover bg-center text-foreground transition-colors duration-300">
+    <div className="min-h-screen bg-black bg-cover bg-center text-foreground transition-colors duration-300">
       <Navbar />
       <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center">
         <motion.h1
