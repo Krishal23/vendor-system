@@ -105,8 +105,8 @@ export default function VendorsPage() {
       </motion.div>
 
       <Box display="flex" gap={2} mb={4} flexWrap="wrap" justifyContent="center">
-        <TextField label="Search Vendor" value={search} onChange={(e) => setSearch(e.target.value)} fullWidth variant="outlined" sx={{ maxWidth: 250, input: { color: '#fff' }, '& .MuiInputLabel-root': { color: '#90caf9' }, '& fieldset': { borderColor: '#90caf9' } }} />
-        <TextField label="Search Bank" value={bankName} onChange={(e) => setBankName(e.target.value)} fullWidth variant="outlined" sx={{ maxWidth: 250, input: { color: '#fff' }, '& .MuiInputLabel-root': { color: '#90caf9' }, '& fieldset': { borderColor: '#90caf9' } }} />
+        {/* <TextField label="Search Vendor" value={search} onChange={(e) => setSearch(e.target.value)} fullWidth variant="outlined" sx={{ maxWidth: 250, input: { color: '#fff' }, '& .MuiInputLabel-root': { color: '#90caf9' }, '& fieldset': { borderColor: '#90caf9' } }} /> */}
+        {/* <TextField label="Search Bank" value={bankName} onChange={(e) => setBankName(e.target.value)} fullWidth variant="outlined" sx={{ maxWidth: 250, input: { color: '#fff' }, '& .MuiInputLabel-root': { color: '#90caf9' }, '& fieldset': { borderColor: '#90caf9' } }} /> */}
         <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)} variant="outlined" sx={{ color: '#fff', minWidth: 150, '& fieldset': { borderColor: '#90caf9' } }}>
           <MenuItem value="vendorName">Vendor Name</MenuItem>
           <MenuItem value="bankName">Bank Name</MenuItem>
