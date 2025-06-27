@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState ,useCallback} from 'react';
 import axios from 'axios';
 import {
   Box,
@@ -39,10 +39,10 @@ export default function VendorsPage() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
-    const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
 
-  const fetchVendors = async () => {
+  const fetchVendors = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get(`/api/vendors`, {
@@ -53,9 +53,9 @@ export default function VendorsPage() {
       toast.error('Failed to fetch vendors');
     }
     setLoading(false);
-  };
+  }, [page, limit, sortBy, order, bankName, search]);
 
-  useEffect(() => { fetchVendors(); }, [page, limit, sortBy, order, search, bankName]);
+  useEffect(() => { fetchVendors(); }, [page, limit, sortBy, order, search, bankName, fetchVendors]);
 
   const handleRowClick = async (vendorId) => {
     try {

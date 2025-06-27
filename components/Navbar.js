@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Logout, Login, Store } from '@mui/icons-material';
+import Image from 'next/image';
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -45,9 +46,11 @@ export default function Navbar() {
             ) : session ? (
               <div className="flex items-center gap-3">
                 {session.user?.image && (
-                  <img
+                  <Image
                     src={session.user.image}
                     alt="User"
+                    width={100}
+                    height={100}
                     className="w-8 h-8 rounded-full border border-white/20"
                   />
                 )}
